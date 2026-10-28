@@ -334,7 +334,15 @@ func TestChannelConnection(c *gin.Context) {
 		return
 	}
 
-	_ = credBytes // TODO: use with channel adapter HealthCheck
+	adapter, err := channels.NewAdapter(channel.ChannelType, credBytes)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "adapter_init_failed"})
+		return
+	}
+	if err := adapter.HealthCheck(c.Request.Context()); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "connection_failed"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "message": "connection_successful"})
 }
